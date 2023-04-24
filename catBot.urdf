@@ -13,7 +13,7 @@
     <color rgba=".2 .2 .6 1" />
   </material>
 
-  <link name="A">
+  <link name="link_A">
     <inertial>
       <origin xyz="-0.050 0 0"/>
       <mass value="1" />
@@ -50,7 +50,7 @@
     <origin xyz="-0.02 0 0" rpy="0 0 0"/>
   </joint> -->
 
-  <link name="A_aux">
+  <link name="link_A_aux">
     <inertial>
       <origin xyz="0 0 0"/>
       <mass value="0.0001" />
@@ -73,14 +73,14 @@
     </visual>
   </link>
   <joint name="A_revolute" type="revolute">
-    <parent link="A"/>
-    <child link="A_aux"/>
+    <parent link="link_A"/>
+    <child link="link_A_aux"/>
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <axis xyz="1 0 0"/>
   <!-- // TODO Limit, controller, dynamcis -->
   </joint>
 
-  <link name="B_aux">
+  <link name="link_B_aux">
     <inertial>
       <origin xyz="0 0 0"/>
       <mass value="0.0001" />
@@ -103,15 +103,15 @@
     </visual>
   </link>
   <joint name="middle_revolute" type="revolute">
-    <parent link="A_aux"/>
-    <child link="B_aux"/>
+    <parent link="link_A_aux"/>
+    <child link="link_B_aux"/>
     <origin rpy="0 0 0" xyz="0.03 0 0"/>
     <axis xyz="0 1 0"/>
   <!-- // TODO Limit, controller, dynamcis -->
   </joint>
 
 
-  <link name="B">
+  <link name="link_B">
     <inertial>
       <origin xyz="0.050 0 0"/>
       <mass value="1" />
@@ -143,8 +143,8 @@
     </visual>
   </link>
   <joint name="B_revolute" type="revolute">
-    <parent link="B_aux"/>
-    <child link="B"/>
+    <parent link="link_B_aux"/>
+    <child link="link_B"/>
     <origin rpy="0 0 0" xyz="0.03 0. 0."/>
     <axis xyz="1 0 0"/>
   <!-- // TODO Limit, controller, dynamcis -->
