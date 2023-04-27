@@ -149,4 +149,10 @@
     <axis xyz="1 0 0"/>
   <!-- // TODO Limit, controller, dynamcis -->
   </joint>
+
+  <transmission type="SimpleTransmission" name="cat_A_torque">
+    <actuator name="torque" />
+    <joint name="A_revolute" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
 </robot>

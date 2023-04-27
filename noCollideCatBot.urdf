@@ -20,14 +20,6 @@
       <inertia ixx=" 0.00045" ixy=" 0.00000" ixz=" 0.00000"iyy=" 0.00106" iyz=" 0.00000" izz=" 0.00106"/>
     </inertial>
 
-    <collision>
-      <origin xyz="-0.050 0 0" rpy="0 1.570 0"/>
-      <geometry>
-        <cylinder length="0.100" radius="0.030"/>
-      </geometry>
-      <material name="black"/>
-    </collision>
-
     <visual>
       <origin xyz="-0.050 0 0" rpy="0 1.570 0" />
       <geometry>
@@ -44,12 +36,17 @@
       <material name="MITred"/>
     </visual>
   </link>
+  <joint name="base_weld" type="fixed">
+    <parent link="world" />
+    <child link="link_A" />
+    <origin xyz="-0.02 0 0" rpy="0 0 0"/>
+  </joint>
 
   <link name="link_A_aux">
     <inertial>
       <origin xyz="0 0 0"/>
       <mass value="0.0001" />
-      <inertia ixx=" 0.00000" ixy=" 0.00000" ixz=" 0.00000"iyy=" 0.00000" iyz=" 0.00000" izz=" 0.00000"/>
+      <inertia ixx="0.00001" ixy=" 0.0" ixz=" 0.0" iyy=" 0.00001" iyz=" 0.0" izz=" 0.00001"/>
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -79,7 +76,7 @@
     <inertial>
       <origin xyz="0 0 0"/>
       <mass value="0.0001" />
-      <inertia ixx=" 0.00000" ixy=" 0.00000" ixz=" 0.00000"iyy=" 0.00000" iyz=" 0.00000" izz=" 0.00000"/>
+      <inertia ixx="0.00001" ixy=" 0.0" ixz=" 0.0" iyy=" 0.00001" iyz=" 0.0" izz=" 0.00001"/>
     </inertial>
     <visual>
       <origin xyz="0.03 0 0" rpy="0 0 0"/>
@@ -113,14 +110,6 @@
       <inertia ixx=" 0.00045" ixy=" 0.00000" ixz=" 0.00000"iyy=" 0.00106" iyz=" 0.00000" izz=" 0.00106"/>
     </inertial>
 
-    <collision>
-      <origin xyz="0.050 0 0" rpy="0 1.570 0"/>
-      <geometry>
-        <cylinder length="0.100" radius="0.030"/>
-      </geometry>
-      <material name="black"/>
-    </collision>
-
     <visual>
       <origin xyz="0.050 0 0" rpy="0 1.570 0" />
       <geometry>
@@ -145,16 +134,21 @@
   <!-- // TODO Limit, controller, dynamcis -->
   </joint>
 
-
   <transmission type="SimpleTransmission" name="cat_A_torque">
-    <actuator name="torque" />
+    <actuator name="A_torque" />
     <joint name="A_revolute" />
     <mechanicalReduction>1</mechanicalReduction>
   </transmission>
 
   <transmission type="SimpleTransmission" name="cat_B_torque">
-    <actuator name="torque" />
+    <actuator name="B_torque" />
     <joint name="B_revolute" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+
+  <transmission type="SimpleTransmission" name="cat_hinge_torque">
+    <actuator name="hinge_torque" />
+    <joint name="middle_revolute" />
     <mechanicalReduction>1</mechanicalReduction>
   </transmission>
 </robot>
