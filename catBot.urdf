@@ -151,10 +151,4 @@
     <joint name="A_revolute" />
     <mechanicalReduction>1</mechanicalReduction>
   </transmission>
-
-  <transmission type="SimpleTransmission" name="cat_B_torque">
-    <actuator name="torque" />
-    <joint name="B_revolute" />
-    <mechanicalReduction>1</mechanicalReduction>
-  </transmission>
 </robot>
