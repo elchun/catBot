@@ -36,11 +36,11 @@
       <material name="MITred"/>
     </visual>
   </link>
-  <!-- <joint name="base_weld" type="fixed">
+  <joint name="base_weld" type="fixed">
     <parent link="world" />
     <child link="link_A" />
     <origin xyz="-0.02 0 0" rpy="0 0 0"/>
-  </joint> -->
+  </joint>
 
   <link name="link_A_aux">
     <inertial>
