@@ -1,0 +1,180 @@
+<?xml version="1.0"?>
+
+<robot xmlns="http://drake.mit.edu"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://drake.mit.edu ../../doc/drakeURDF.xsd" name="catBot">
+  <material name="black">
+    <color rgba="0.3 0.3 0.3 1" />
+  </material>
+  <material name="MITred">
+    <color rgba=".6 .2 .2 1" />
+  </material>
+  <material name="pseudolink">
+    <color rgba=".2 .2 .6 1" />
+  </material>
+  <material name="reference">
+    <color rgba=".3 .2 .6 0.5" />
+  </material>
+
+  <!-- // MAKE BASE LINK // -->
+  <link name="link_base">
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <mass value="1" />
+      <inertia ixx="0.00001" ixy=" 0.0" ixz=" 0.0" iyy=" 0.00001" iyz=" 0.0" izz=" 0.00001"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 1.571 0"/>
+      <geometry>
+        <cylinder length="0.01" radius="0.1"/>
+      </geometry>
+      <material name="reference"/>
+    </visual>
+  </link>
+
+  <!-- // MAKE HINGE LINK // -->
+  <link name="link_hinge">
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <mass value="1" />
+      <inertia ixx="0.00001" ixy=" 0.0" ixz=" 0.0" iyy=" 0.00001" iyz=" 0.0" izz=" 0.00001"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.01"/>
+      </geometry>
+      <material name="pseudolink"/>
+    </visual>
+  </link>
+
+  <!-- // MAKE LINK A AUX // -->
+  <link name="link_A_aux">
+    <inertial>
+      <origin xyz="0.050 0 0"/>
+      <mass value="0.0001" />
+      <inertia ixx="0.00001" ixy=" 0.0" ixz=" 0.0" iyy=" 0.00001" iyz=" 0.0" izz=" 0.00001"/>
+    </inertial>
+    <visual>
+      <origin xyz="0.050 0 0"/>
+      <geometry>
+        <sphere radius="0.01"/>
+      </geometry>
+      <material name="pseudolink"/>
+    </visual>
+  </link>
+
+  <!-- // MAKE LINK B AUX // -->
+  <link name="link_B_aux">
+    <inertial>
+      <origin xyz="-0.050 0 0"/>
+      <mass value="0.0001" />
+      <inertia ixx="0.00001" ixy=" 0.0" ixz=" 0.0" iyy=" 0.00001" iyz=" 0.0" izz=" 0.00001"/>
+    </inertial>
+    <visual>
+      <origin xyz="-0.050 0 0"/>
+      <geometry>
+        <sphere radius="0.01"/>
+      </geometry>
+      <material name="pseudolink"/>
+    </visual>
+  </link>
+
+  <!-- // MAKE LINK A // -->
+  <link name="link_A">
+    <inertial>
+      <origin xyz="0.050 0 0"/>
+      <mass value="1" />
+      <inertia ixx=" 0.00045" ixy=" 0.00000" ixz=" 0.00000"iyy=" 0.00106" iyz=" 0.00000" izz=" 0.00106"/>
+    </inertial>
+
+    <visual>
+      <origin xyz="0.050 0 0" rpy="0 1.570 0" />
+      <geometry>
+        <cylinder length="0.100" radius="0.030"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+
+    <visual>
+      <origin xyz="0.080 0 0.03" rpy="0 1.570 0" />
+      <geometry>
+        <sphere radius="0.01"/>
+      </geometry>
+      <material name="MITred"/>
+    </visual>
+  </link>
+
+  <!-- // MAKE LINK B // -->
+  <link name="link_B">
+    <inertial>
+      <origin xyz="-0.050 0 0"/>
+      <mass value="1" />
+      <inertia ixx=" 0.00045" ixy=" 0.00000" ixz=" 0.00000"iyy=" 0.00106" iyz=" 0.00000" izz=" 0.00106"/>
+    </inertial>
+
+    <visual>
+      <origin xyz="-0.050 0 0" rpy="0 1.570 0" />
+      <geometry>
+        <cylinder length="0.100" radius="0.030"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+
+    <visual>
+      <origin xyz="-0.080 0 0.03" rpy="0 1.570 0" />
+      <geometry>
+        <sphere radius="0.01"/>
+      </geometry>
+      <material name="MITred"/>
+    </visual>
+  </link>
+
+
+  <!-- // JOINTS // -->
+  <joint name="base_weld" type="fixed">
+    <parent link="world" />
+    <child link="link_base" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="hinge_revolute" type="revolute">
+    <parent link="link_base" />
+    <child link="link_hinge" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-6.28" upper="6.28" effort="100" velocity="100"/>
+  </joint>
+
+  <joint name="A_hinge" type="revolute">
+    <parent link="link_hinge" />
+    <child link="link_A_aux" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.7854" upper="0.7854" effort="100" velocity="100"/>
+  </joint>
+
+  <joint name="B_hinge" type="revolute">
+    <parent link="link_hinge" />
+    <child link="link_B_aux" />
+    <origin xyz="0 0 0" rpy="0 0 0.0"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-0.7854" upper="0.7854" effort="100" velocity="100"/>
+  </joint>
+
+  <joint name="A_revolute" type="revolute">
+    <parent link="link_A_aux" />
+    <child link="link_A" />
+    <origin xyz="0.050 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-0.7854" upper="0.7854" effort="100" velocity="100"/>
+  </joint>
+
+  <joint name="B_revolute" type="revolute">
+    <parent link="link_B_aux" />
+    <child link="link_B" />
+    <origin xyz="-0.050 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-0.7854" upper="0.7854" effort="100" velocity="100"/>
+  </joint>
+
+</robot>

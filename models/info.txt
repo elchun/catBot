@@ -1,1 +1,8 @@
 Information about catbot models
+
+Use singleAxisCatBot.urdf for all experiments.
+
+This one has a central joint that attaches the robot to world,
+then the rest of the robot can pivot around that.
+
+Its kinda like cartpole and whatnot
