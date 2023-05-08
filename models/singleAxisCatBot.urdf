@@ -177,4 +177,28 @@
     <limit lower="-0.7854" upper="0.7854" effort="100" velocity="100"/>
   </joint>
 
+  <transmission type="SimpleTransmission" name="A_revolute_torque_t">
+    <actuator name="A_revolute_torque" />
+    <joint name="A_revolute" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+
+  <transmission type="SimpleTransmission" name="B_revolute_torque_t">
+    <actuator name="B_revolute_torque" />
+    <joint name="B_revolute" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+
+  <transmission type="SimpleTransmission" name="A_hinge_torque_t">
+    <actuator name="A_hinge_torque" />
+    <joint name="A_hinge" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+
+  <transmission type="SimpleTransmission" name="B_hinge_torque_t">
+    <actuator name="B_hinge_torque" />
+    <joint name="B_hinge" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+
 </robot>
