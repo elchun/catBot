@@ -14,3 +14,4 @@ setup(
 )
 
 # https://stackoverflow.com/questions/58193205/custom-python-package-not-found
+# Use pip3 install -e . to install the package

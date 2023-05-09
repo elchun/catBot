@@ -101,6 +101,97 @@ class MeshcatSliders(LeafSystem):
             output[i] = self._meshcat.GetSliderValue(slider)
 
 
+class MeshcatCatBotSliders(LeafSystem):
+
+
+    MinRange = namedtuple("MinRange", ('a_rev', 'b_rev', 'a_hinge', 'b_hinge'))
+    MinRange.__new__.__defaults__ = (-np.pi/2, -np.pi/2, -np.pi/4, -np.pi/4)
+    MaxRange = namedtuple("MaxRange", ('a_rev', 'b_rev', 'a_hinge', 'b_hinge'))
+    MaxRange.__new__.__defaults__ = (np.pi/2, np.pi/2, np.pi/4, np.pi/4)
+    Value = namedtuple("Value", ('a_rev', 'b_rev', 'a_hinge', 'b_hinge'))
+    Value.__new__.__defaults__ = (0.0, 0.0, 0.0, 0.0, 0.0)
+    DecrementKey = namedtuple("DecrementKey",
+                              ("roll", "pitch", "yaw", "x", "y", "z"))
+    DecrementKey.__new__.__defaults__ = ("KeyQ", "KeyW", "KeyA", "KeyJ", "KeyI",
+                                         "KeyO")
+    IncrementKey = namedtuple("IncrementKey",
+                              ("roll", "pitch", "yaw", "x", "y", "z"))
+    IncrementKey.__new__.__defaults__ = ("KeyE", "KeyS", "KeyD", "KeyL", "KeyK",
+                                         "KeyU")
+
+    def __init__(self, meshcat, min_range=MinRange(),
+                 max_range=MaxRange(), value=Value(),
+                 decrement_keycode=DecrementKey(),
+                 increment_keycode=IncrementKey()):
+        LeafSystem.__init__(self)
+
+        port = self.DeclareVectorOutputPort(
+                f"desired_positions", 8,
+                partial(self.DoCalcOutput))
+
+        self.DeclareVectorInputPort('joint_pos_and_vel', 10)
+
+        self.DeclareInitializationDiscreteUpdateEvent(self.Initialize)
+
+        # The widgets themselves have undeclared state.  For now, we accept it,
+        # and simply disable caching on the output port.
+        # TODO(russt): consider implementing the more elaborate methods seen
+        # in, e.g., LcmMessageSubscriber.
+        port.disable_caching_by_default()
+
+        self._meshcat = meshcat
+        self._value = list(value)
+
+        print("Keyboard Controls:")
+        for i in range(4):
+            meshcat.AddSlider(min=min_range[i],
+                                max=max_range[i],
+                                value=value[i],
+                                step=0.01,
+                                name=value._fields[i],
+                                decrement_keycode=decrement_keycode[i],
+                                increment_keycode=increment_keycode[i])
+            print(
+                f"{value._fields[i]} : {decrement_keycode[i]} / {increment_keycode[i]}"  # noqa
+            )
+
+    def SetPos(self, pos):
+        print('Pos: ', pos)
+        self._value[0] = pos[1]
+        self._value[1] = pos[2]
+        self._value[2] = pos[3]
+        self._value[3] = pos[4]
+
+    def DoCalcOutput(self, context, output):
+        changed = self._update_values(context)
+        if changed:
+            print('value: ', self._value)
+        desired_state = self._value.copy()+ [0.0, 0.0, 0.0, 0.0]
+        if changed:
+            print('des state: ',desired_state)
+        output.set_value(desired_state)
+
+    def _update_values(self, context):
+        changed = False
+        for i in range(4):
+            old_value = self._value[i]
+            self._value[i] = self._meshcat.GetSliderValue(
+                self.Value._fields[i])
+
+            changed = changed or self._value[i] != old_value
+        if changed and self.get_input_port().HasValue(context):
+            print(self.get_input_port().Eval(context))
+        return changed
+
+    def Initialize(self, context, discrete_state):
+        if self.get_input_port().HasValue(context):
+            self.SetPos(self.get_input_port().Eval(context))
+            return EventStatus.Succeeded()
+        return EventStatus.DidNothing()
+
+
+
+
 class MeshcatPoseSliders(LeafSystem):
     """
     Provides a set of ipywidget sliders (to be used in a Jupyter notebook) with
