@@ -45,6 +45,13 @@
       </geometry>
       <material name="pseudolink"/>
     </visual>
+    <visual>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.1" radius="0.01"/>
+      </geometry>
+      <material name="MITred"/>
+    </visual>
   </link>
 
   <!-- // MAKE LINK A AUX // -->
