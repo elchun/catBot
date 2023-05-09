@@ -105,9 +105,9 @@ class MeshcatCatBotSliders(LeafSystem):
 
 
     MinRange = namedtuple("MinRange", ('a_rev', 'b_rev', 'a_hinge', 'b_hinge'))
-    MinRange.__new__.__defaults__ = (-np.pi/2, -np.pi/2, -np.pi/4, -np.pi/4)
+    MinRange.__new__.__defaults__ = (-np.pi/2, -np.pi/2, -np.pi/3, -np.pi/3)
     MaxRange = namedtuple("MaxRange", ('a_rev', 'b_rev', 'a_hinge', 'b_hinge'))
-    MaxRange.__new__.__defaults__ = (np.pi/2, np.pi/2, np.pi/4, np.pi/4)
+    MaxRange.__new__.__defaults__ = (np.pi/2, np.pi/2, np.pi/3, np.pi/3)
     Value = namedtuple("Value", ('a_rev', 'b_rev', 'a_hinge', 'b_hinge'))
     Value.__new__.__defaults__ = (0.0, 0.0, 0.0, 0.0, 0.0)
     DecrementKey = namedtuple("DecrementKey",
