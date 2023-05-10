@@ -145,6 +145,9 @@ def make_catbot_env(generator,
             b_rot_world = (catbot_state[0] + catbot_state[4]) % (np.pi * 2) - np.pi
             center_from_vertical = (catbot_state[0] % (2 * np.pi)) - np.pi
 
+            a_hinge = catbot_state[1]
+            b_hinge = catbot_state[3]
+
             # Add position cost
             # -- COST 1 -- #
             # cost = a_rot_world**2 + \
@@ -169,7 +172,31 @@ def make_catbot_env(generator,
 
             # -- COST 6 -- #
             # Simple cost
-            cost = (a_rot_world**2 + b_rot_world**2)
+            # cost = (a_rot_world**2 + b_rot_world**2)
+
+            # -- COST 7 -- #
+            # cost = a_rot_world**2 + b_rot_world**2 + center_from_vertical**2
+
+            # -- COST 8 -- #
+            # (Sparese cost)
+            # if a_rot_world ** 2 > (np.pi / 4)**2 or b_rot_world ** 2 > (np.pi / 4)**2:
+            #     cost = 1
+            # else:
+            #     cost = 0
+
+            # -- COST 9 -- #
+            # Normal with end reward
+
+            # cost = (a_rot_world**2 + b_rot_world**2)
+            # if a_rot_world ** 2 < (np.pi / 8)**2 and b_rot_world ** 2 < (np.pi / 8)**2:
+            #     cost -= 100
+
+            # -- COST 10 -- #
+            # Add cost so hinges are the same
+
+            cost = a_rot_world**2 + b_rot_world**2 + 10 * (a_hinge - b_hinge)**2
+            if a_rot_world ** 2 < (np.pi / 8)**2 and b_rot_world ** 2 < (np.pi / 8)**2:
+                cost -= 100
 
             # cost = np.sign(a_hinge_world * b_hinge_world) + center_from_vertical**2
 
@@ -215,7 +242,7 @@ def make_catbot_env(generator,
     )
 
     plant.GetJointByName("hinge_revolute").set_random_angle_distribution(
-        np.pi * center_uniform_random - np.pi/2)
+        2 * np.pi * center_uniform_random - np.pi)
 
     plant.GetJointByName("A_hinge").set_random_angle_distribution(
         (np.pi/2) * a_hinge_uniform_random - np.pi/4)
