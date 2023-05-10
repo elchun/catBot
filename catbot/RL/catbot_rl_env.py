@@ -141,30 +141,35 @@ def make_catbot_env(generator,
 
 
             # So we clamp the angle between 0 and 2pi
-            a_hinge_world = (catbot_state[0] + catbot_state[2]) % (np.pi * 2) - np.pi
-            b_hinge_world = (catbot_state[0] + catbot_state[4]) % (np.pi * 2) - np.pi
+            a_rot_world = (catbot_state[0] + catbot_state[2]) % (np.pi * 2) - np.pi
+            b_rot_world = (catbot_state[0] + catbot_state[4]) % (np.pi * 2) - np.pi
             center_from_vertical = (catbot_state[0] % (2 * np.pi)) - np.pi
 
             # Add position cost
             # -- COST 1 -- #
-            # cost = a_hinge_world**2 + \
-            #     b_hinge_world**2 + \
+            # cost = a_rot_world**2 + \
+            #     b_rot_world**2 + \
             #     2 * center_from_vertical**2
 
             # -- COST 2 -- #
             # Want a and b hinge world to have the same sign and face down
-            # cost = a_hinge_world * b_hinge_world + center_from_vertical**2
+            # cost = -a_rot_world * b_rot_world + center_from_vertical**2
 
             # -- COST 3 -- #
             # Center cost?
             # cost = center_from_vertical**2
 
-            # -- COST 4 -- #
-            cost = a_hinge_world**2 + \
-                b_hinge_world**2
+            # # -- COST 4 -- #
+            # cost = a_rot_world**2 + \
+            #     b_rot_world**2
 
             # -- COST 5 -- #
-            cost = (a_hinge_world**2 + b_hinge_world**2) * np.sign(a_hinge_world * b_hinge_world)
+            # Want both feet to be facing the same direction
+            # cost = (a_rot_world**2 + b_rot_world**2) + 5 * np.sign(-a_rot_world * b_rot_world)
+
+            # -- COST 6 -- #
+            # Simple cost
+            cost = (a_rot_world**2 + b_rot_world**2)
 
             # cost = np.sign(a_hinge_world * b_hinge_world) + center_from_vertical**2
 
@@ -201,6 +206,14 @@ def make_catbot_env(generator,
         name="uniform_random", type=Variable.Type.RANDOM_UNIFORM
     )
 
+    a_rev_uniform_random = Variable(
+        name="uniform_random", type=Variable.Type.RANDOM_UNIFORM
+    )
+
+    b_rev_uniform_random = Variable(
+        name="uniform_random", type=Variable.Type.RANDOM_UNIFORM
+    )
+
     plant.GetJointByName("hinge_revolute").set_random_angle_distribution(
         np.pi * center_uniform_random - np.pi/2)
 
@@ -209,6 +222,12 @@ def make_catbot_env(generator,
 
     plant.GetJointByName("B_hinge").set_random_angle_distribution(
         (np.pi/2) * b_hinge_uniform_random - np.pi/4)
+
+    plant.GetJointByName("A_revolute").set_random_angle_distribution(
+        (np.pi) * a_hinge_uniform_random - np.pi/2)
+
+    plant.GetJointByName("B_revolute").set_random_angle_distribution(
+        (np.pi) * b_hinge_uniform_random - np.pi/2)
 
 
     # -- Build diagram and sim -- #
