@@ -18,8 +18,9 @@ from pydrake.all import (
     Variable,
     EventStatus,
     RandomGenerator,
-    DrakeGymEnv,
 )
+
+from catbot.utils.drake_gym import DrakeGymEnv
 
 from catbot.utils.meshcat_util import MeshcatCatBotSliders
 
@@ -138,14 +139,16 @@ def make_catbot_env(generator,
             catbot_state = self.get_input_port(0).Eval(context)
             actions = self.get_input_port(1).Eval(context)
 
-            a_hinge_from_vertical = (catbot_state[2] % (2 * np.pi)) - np.pi
-            b_hinge_from_vertical = (catbot_state[4] % (2 * np.pi)) - np.pi
+
+            # So we clamp the angle between 0 and 2pi
+            a_hinge_world = (catbot_state[0] + catbot_state[2]) % (np.pi * 2) - np.pi
+            b_hinge_world = (catbot_state[0] + catbot_state[4]) % (np.pi * 2) - np.pi
             center_from_vertical = (catbot_state[0] % (2 * np.pi)) - np.pi
 
             # Add position cost
-            cost = a_hinge_from_vertical**2 + \
-                b_hinge_from_vertical**2 + \
-                center_from_vertical**2
+            cost = a_hinge_world**2 + \
+                b_hinge_world**2 + \
+                2 * center_from_vertical**2
 
             state_to_control_projection = np.array([
                 [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -158,7 +161,9 @@ def make_catbot_env(generator,
             effort = actions - state_to_control_projection.dot(catbot_state)
             cost += 0.1 * effort.dot(effort)
 
-            output[0] = 10 - cost
+            # Add to make reward positive (to avoid rewarding simulator crashes)
+            # Quote from manipulation repo
+            output[0] = 30 - cost
 
     reward = builder.AddSystem(RewardSystem())
     builder.Connect(plant.get_state_output_port(model), reward.get_input_port(0))
@@ -205,7 +210,7 @@ def CatBotEnv(observations="state", meshcat=None, time_limit=10):
     # except in violation).  However we don't have any other better limits
     # here.  So we broaden the limits by a fixed offset and hope for the best.
 
-    NUM_DOFS = 4
+    NUM_DOFS = 5
     POSITION_LIMIT_TOLERANCE = np.full((NUM_DOFS,), 0.1)
     VELOCITY_LIMIT_TOLERANCE = np.full((NUM_DOFS,), 0.5)
     if observations == "state":

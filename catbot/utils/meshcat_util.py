@@ -16,7 +16,7 @@ from pydrake.multibody.parsing import Parser
 from pydrake.multibody.plant import AddMultibodyPlantSceneGraph
 from pydrake.multibody.tree import BodyIndex, JointIndex
 from pydrake.perception import BaseField, Fields, PointCloud
-from pydrake.solvers.mathematicalprogram import BoundingBoxConstraint
+from pydrake.solvers import BoundingBoxConstraint
 from pydrake.systems.framework import (DiagramBuilder, EventStatus, LeafSystem,
                                        PublishEvent, VectorSystem)
 
@@ -131,7 +131,10 @@ class MeshcatCatBotSliders(LeafSystem):
 
         self.DeclareVectorInputPort('joint_pos_and_vel', 10)
 
+        self.DeclareVectorInputPort('reward_value', 1)
+
         self.DeclareInitializationDiscreteUpdateEvent(self.Initialize)
+
 
         # The widgets themselves have undeclared state.  For now, we accept it,
         # and simply disable caching on the output port.
@@ -162,13 +165,18 @@ class MeshcatCatBotSliders(LeafSystem):
         self._value[2] = pos[3]
         self._value[3] = pos[4]
 
+    def print_reward(self, context):
+        reward = self.get_input_port(1).Eval(context)
+        print(f'Reward: {reward}')
+
     def DoCalcOutput(self, context, output):
         changed = self._update_values(context)
-        if changed:
-            print('value: ', self._value)
         desired_state = self._value.copy()+ [0.0, 0.0, 0.0, 0.0]
-        if changed:
-            print('des state: ',desired_state)
+        if changed and self.get_input_port(1).HasValue(context):
+            self.print_reward(context)
+        # if changed:
+        #     print('value: ', self._value)
+        #     print('des state: ',desired_state)
         output.set_value(desired_state)
 
     def _update_values(self, context):
@@ -179,13 +187,13 @@ class MeshcatCatBotSliders(LeafSystem):
                 self.Value._fields[i])
 
             changed = changed or self._value[i] != old_value
-        if changed and self.get_input_port().HasValue(context):
-            print(self.get_input_port().Eval(context))
+        # if changed and self.get_input_port(0).HasValue(context):
+        #     print(self.get_input_port(0).Eval(context))
         return changed
 
     def Initialize(self, context, discrete_state):
-        if self.get_input_port().HasValue(context):
-            self.SetPos(self.get_input_port().Eval(context))
+        if self.get_input_port(0).HasValue(context):
+            self.SetPos(self.get_input_port(0).Eval(context))
             return EventStatus.Succeeded()
         return EventStatus.DidNothing()
 
