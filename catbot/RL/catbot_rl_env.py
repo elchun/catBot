@@ -27,7 +27,7 @@ from catbot.utils.meshcat_util import MeshcatCatBotSliders
 def make_catbot_env(generator,
                     observations="state",
                     meshcat=None,
-                    time_limit=10):
+                    time_limit=4):
     time_step = 1e-3
 
     builder = DiagramBuilder()
@@ -146,12 +146,27 @@ def make_catbot_env(generator,
             center_from_vertical = (catbot_state[0] % (2 * np.pi)) - np.pi
 
             # Add position cost
+            # -- COST 1 -- #
             # cost = a_hinge_world**2 + \
             #     b_hinge_world**2 + \
             #     2 * center_from_vertical**2
 
+            # -- COST 2 -- #
             # Want a and b hinge world to have the same sign and face down
-            cost = a_hinge_world * b_hinge_world + center_from_vertical**2
+            # cost = a_hinge_world * b_hinge_world + center_from_vertical**2
+
+            # -- COST 3 -- #
+            # Center cost?
+            # cost = center_from_vertical**2
+
+            # -- COST 4 -- #
+            cost = a_hinge_world**2 + \
+                b_hinge_world**2
+
+            # -- COST 5 -- #
+            cost = (a_hinge_world**2 + b_hinge_world**2) * np.sign(a_hinge_world * b_hinge_world)
+
+            # cost = np.sign(a_hinge_world * b_hinge_world) + center_from_vertical**2
 
             state_to_control_projection = np.array([
                 [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -174,12 +189,29 @@ def make_catbot_env(generator,
     builder.ExportOutput(reward.get_output_port(), "reward")
 
     # -- Set random state distributions -- #
-    uniform_random = Variable(
+    center_uniform_random = Variable(
         name="uniform_random", type=Variable.Type.RANDOM_UNIFORM
     )
 
-    # TODO Set random pose distribution
+    a_hinge_uniform_random = Variable(
+        name="uniform_random", type=Variable.Type.RANDOM_UNIFORM
+    )
 
+    b_hinge_uniform_random = Variable(
+        name="uniform_random", type=Variable.Type.RANDOM_UNIFORM
+    )
+
+    plant.GetJointByName("hinge_revolute").set_random_angle_distribution(
+        np.pi * center_uniform_random - np.pi/2)
+
+    plant.GetJointByName("A_hinge").set_random_angle_distribution(
+        (np.pi/2) * a_hinge_uniform_random - np.pi/4)
+
+    plant.GetJointByName("B_hinge").set_random_angle_distribution(
+        (np.pi/2) * b_hinge_uniform_random - np.pi/4)
+
+
+    # -- Build diagram and sim -- #
     diagram = builder.Build()
     simulator = Simulator(diagram)
 
