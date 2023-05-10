@@ -146,9 +146,12 @@ def make_catbot_env(generator,
             center_from_vertical = (catbot_state[0] % (2 * np.pi)) - np.pi
 
             # Add position cost
-            cost = a_hinge_world**2 + \
-                b_hinge_world**2 + \
-                2 * center_from_vertical**2
+            # cost = a_hinge_world**2 + \
+            #     b_hinge_world**2 + \
+            #     2 * center_from_vertical**2
+
+            # Want a and b hinge world to have the same sign and face down
+            cost = a_hinge_world * b_hinge_world + center_from_vertical**2
 
             state_to_control_projection = np.array([
                 [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
