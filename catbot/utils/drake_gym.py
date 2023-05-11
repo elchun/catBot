@@ -1,7 +1,8 @@
-# From Manipulation Repo
+# From Manipulation Repo with modifications
 
 
 from typing import Callable, Optional, Union
+import torch
 import warnings
 
 import gym
@@ -233,6 +234,8 @@ class DrakeGymEnv(gym.Env):
             status = e.args[0]
 
         observation = self.observation_port.Eval(context)
+        # observation = np.array(observation, dtype=np.float32)
+        # observation = torch.tensor(observation, dtype=torch.float32)
         reward = self.reward(self.simulator.get_system(), context)
         reached_term = (
             SimulatorStatus.ReturnReason.kReachedTerminationCondition
@@ -284,6 +287,8 @@ class DrakeGymEnv(gym.Env):
         # Note: The output port will be evaluated without fixing the input
         # port.
         observations = self.observation_port.Eval(context)
+        # observations = np.array(observations, dtype=np.float32)
+        # observations = torch.tensor(observations, dtype=torch.float32)
         return observations if not return_info else (observations, dict())
 
     def render(self, mode="human"):

@@ -121,7 +121,23 @@ def make_catbot_env(generator,
     # -- Export ports -- #
     builder.ExportInput(actions.get_input_port(), "actions")
 
+    class ConvertStateDtype(LeafSystem):
+        def __init__(self):
+            LeafSystem.__init__(self)
+            self.DeclareVectorInputPort("state_in", 10)
+            self.DeclareVectorOutputPort("state_out", 10, self.convert)
+
+        def convert(self, context, output):
+            state = self.get_input_port().Eval(context)
+            float_state = np.array(state, dtype=np.float32)
+            for i in range(10):
+                output[i] = float_state[i]
+
+
     if observations == "state":
+        # convert_state_dtype = builder.AddSystem(ConvertStateDtype())
+        # builder.Connect(plant.get_state_output_port(), convert_state_dtype.get_input_port())
+        # builder.ExportOutput(convert_state_dtype.get_output_port(), "observations")
         builder.ExportOutput(plant.get_state_output_port(), "observations")
     else:
         raise ValueError("Observations must be 'state'")
@@ -191,29 +207,54 @@ def make_catbot_env(generator,
             # if a_rot_world ** 2 < (np.pi / 8)**2 and b_rot_world ** 2 < (np.pi / 8)**2:
             #     cost -= 100
 
-            # -- COST 10 -- #
-            # Add cost so hinges are the same
+            # # -- COST 10 -- #
+            # # Add cost so hinges are the same
+            # cost = a_rot_world**2 + b_rot_world**2 + 10 * (a_hinge - b_hinge)**2
 
-            cost = a_rot_world**2 + b_rot_world**2 + 10 * (a_hinge - b_hinge)**2
+            # # Add final position cost
+            # if a_rot_world ** 2 < (np.pi / 8)**2 and b_rot_world ** 2 < (np.pi / 8)**2:
+            #     cost -= 100
+
+            # # -- COST 11 -- #
+            # cost = a_rot_world**2 + b_rot_world**2 \
+            #     + center_from_vertical**2 + 10 * (a_hinge - b_hinge)**2
+
+            # # Add final position cost
+            # if a_rot_world ** 2 < (np.pi / 8)**2 and b_rot_world ** 2 < (np.pi / 8)**2:
+            #     cost -= 100
+
+            # -- COST 12 -- #
+            # cost = a_rot_world**2 + b_rot_world**2 \
+            #     + 10 * (a_hinge - b_hinge)**2 \
+            #     + 0.2 * (a_hinge ** 2 + b_hinge ** 2)
+            #     # + center_from_vertical**2 \
+
+            # -- COST 13 -- #
+            # Sparse reward
+            # Add final position cost
             if a_rot_world ** 2 < (np.pi / 8)**2 and b_rot_world ** 2 < (np.pi / 8)**2:
-                cost -= 100
+                cost = -100
+            else:
+                cost = 0
 
-            # cost = np.sign(a_hinge_world * b_hinge_world) + center_from_vertical**2
+            # -- Effort cost -- #
+            # state_to_control_projection = np.array([
+            #     [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+            #     [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            #     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            #     [0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+            # ])
 
-            state_to_control_projection = np.array([
-                [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-                [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
-            ])
-
-            # Add effort cost
-            effort = actions - state_to_control_projection.dot(catbot_state)
-            cost += 0.1 * effort.dot(effort)
+            # # Add effort cost
+            # effort = actions - state_to_control_projection.dot(catbot_state)
+            # cost += 0.1 * effort.dot(effort)
 
             # Add to make reward positive (to avoid rewarding simulator crashes)
             # Quote from manipulation repo
-            output[0] = 30 - cost
+            # output[0] = 30 - cost
+
+            # -- Convert cost to reward -- #
+            output[0] = -cost
 
     reward = builder.AddSystem(RewardSystem())
     builder.Connect(plant.get_state_output_port(model), reward.get_input_port(0))
@@ -242,13 +283,14 @@ def make_catbot_env(generator,
     )
 
     plant.GetJointByName("hinge_revolute").set_random_angle_distribution(
-        2 * np.pi * center_uniform_random - np.pi)
+        # 2 * np.pi * center_uniform_random - np.pi)
+        np.pi/2 * center_uniform_random - np.pi / 4)
 
     plant.GetJointByName("A_hinge").set_random_angle_distribution(
-        (np.pi/2) * a_hinge_uniform_random - np.pi/4)
+        (2 * np.pi/3) * a_hinge_uniform_random - np.pi/3)
 
     plant.GetJointByName("B_hinge").set_random_angle_distribution(
-        (np.pi/2) * b_hinge_uniform_random - np.pi/4)
+        (2 * np.pi/3) * b_hinge_uniform_random - np.pi/3)
 
     plant.GetJointByName("A_revolute").set_random_angle_distribution(
         (np.pi) * a_hinge_uniform_random - np.pi/2)
@@ -280,7 +322,7 @@ def CatBotEnv(observations="state", meshcat=None, time_limit=10):
     action_space = gym.spaces.Box(
         low=np.array([-np.pi/2, -np.pi/2, -np.pi/3, -np.pi/3]),
         high=np.array([np.pi/2, np.pi/2, np.pi/3, np.pi/3]),
-        dtype=np.float64)
+        dtype=np.float32)
 
     plant = simulator.get_system().GetSubsystemByName("plant")
 
@@ -308,7 +350,7 @@ def CatBotEnv(observations="state", meshcat=None, time_limit=10):
             )
         )
         observation_space = gym.spaces.Box(
-            low=np.asarray(low), high=np.asarray(high), dtype=np.float64
+            low=np.asarray(low), high=np.asarray(high), dtype=np.float32
         )
 
     env = DrakeGymEnv(
