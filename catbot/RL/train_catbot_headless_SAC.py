@@ -35,7 +35,7 @@ def main():
     # -- TRAINING -- #
     observations = "state"
     time_limit = 8
-    checkpoint_timesteps = 10000000
+    checkpoint_timesteps = 40000000
     num_checkpoints = 4
     # total time_steps is checkpoint_timesteps * num_checkpoints
 
@@ -52,13 +52,13 @@ def main():
 
     # use_pretrained_model = False
     use_pretrained_model = True
-    model_zip_fname = "./models/SAC_1600000_good.zip"
+    model_zip_fname = "./models/SAC_10000000.zip"
     print('starting training')
     tensorboard_log = "./ppo_cat_bot_logs"
     # tensorboard_log = None
     if use_pretrained_model:
         model = SAC.load(model_zip_fname, env)
-        model.load_replay_buffer('./checkpoints/230510_181232_SAC_P0_C13_replay_buffer_1600000_steps.pkl')
+        model.load_replay_buffer('./models/SAC_10000000_buf.pkl')
     else:
         model = SAC(
             "MlpPolicy",
@@ -70,7 +70,7 @@ def main():
             seed=0)
 
 
-    desc_str = "C13_Half_init"
+    desc_str = "C13_Half_init_round2"
     datetime_val = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
     model_prefix = f'{datetime_val}_SAC_P{int(use_pretrained_model)}_{desc_str}'
     save_fname = f'./models/{model_prefix}_final.zip'
