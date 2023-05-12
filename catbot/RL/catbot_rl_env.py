@@ -283,8 +283,8 @@ def make_catbot_env(generator,
     )
 
     plant.GetJointByName("hinge_revolute").set_random_angle_distribution(
-        2 * np.pi * center_uniform_random - np.pi)
-        # np.pi/2 * center_uniform_random - np.pi / 4)  # For training
+        # 2 * np.pi * center_uniform_random - np.pi)
+        np.pi/2 * center_uniform_random - np.pi / 4)  # For training
 
     plant.GetJointByName("A_hinge").set_random_angle_distribution(
         (2 * np.pi/3) * a_hinge_uniform_random - np.pi/3)
